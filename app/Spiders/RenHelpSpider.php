@@ -49,7 +49,6 @@ class RenHelpSpider extends BasicSpider
     public function parseCategories(Response $response): \Generator
     {
         Log::info("Parsing Categories");
-        print("Parsing Categories \n");
         $pages = $response
             ->filter('h4.ipsDataItem_title > a')
             ->links();
@@ -64,7 +63,6 @@ class RenHelpSpider extends BasicSpider
     public function parseTutorials(Response $response): \Generator
     {
         Log::info("Parsing Tutorials");
-        print("Parsing Tutorials \n");
         $pages = $response
             ->filter('h4.ipsDataItem_title > span.ipsType_break > a')
             ->links();
@@ -86,9 +84,29 @@ class RenHelpSpider extends BasicSpider
         $level = $this->extractLevel($response);
 
         $content_html = Str::trim($response->filter('[data-role="commentContent"]')->first()->html());
-        $converter = new HtmlConverter(array('strip_tags' => 'span div'));
+        //replace src attributes of img tags with data-src attribute
+        $content_html = preg_replace_callback('/<img([^>]*?)\s+src="([^"]+)"([^>]*?)\s+data-src="([^"]+)"/', function($matches) {
+            // Replace src with the value of data-src
+            return '<img' . $matches[1] . ' src="' . $matches[4] . '"' . $matches[3];
+        }, $content_html);
+
+
+        $converter = new HtmlConverter();
         $converter->getEnvironment()->addConverter(new TableConverter());
         $markdown = $converter->convert($content_html);
+        // remove span tags
+        $markdown = preg_replace('/<\/?span[^>]*>/', '', $markdown);
+
+        // find videos and replace
+        // looks for <iframe data-embed-src="..." ...></iframe>
+        // extract data-embed-src and replace with [video]URL[/video]
+        $markdown = preg_replace_callback('/<iframe allowfullscreen="true" data-embed-src="([^"]+)" frameborder="0" height="[^"]+" src="[^"]+" width="[^"]+"><\/iframe>/', function ($matches) {
+            return "[video]{$matches[1]}[/video]";
+        }, $markdown);
+
+        // remove div tags
+        $markdown = preg_replace('/<\/?div[^>]*>/', '', $markdown);
+
 
         $data = [
             'title' => $this->extractTitle($response),
