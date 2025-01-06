@@ -19,6 +19,7 @@ class SaveTutorialToDatabaseProcessor implements ItemProcessorInterface
             'author' => $item->get('author'),
             'level_number' => $item->get('level_number'),
             'level_label' => $item->get('level_label'),
+            'tags' => $item->get('tags'),
         ]);
 
         return $item;

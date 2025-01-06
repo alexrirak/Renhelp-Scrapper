@@ -89,6 +89,7 @@ class RenHelpSpider extends BasicSpider
             'author' => $this->extractAuthor($response),
             'level_number' => $this->extractLevelNumber($level),
             'level_label' => $this->extractLevelLabel($level),
+            'tags' => $this->extractTags($response),
             'srcUrl' => $srcUrl,
         ];
 
@@ -160,6 +161,21 @@ class RenHelpSpider extends BasicSpider
             return $levelLabel;
         }
         return 'Unknown';
+    }
+
+    protected function extractTags(Response $response): array
+    {
+        // Initialize an empty array to store tags
+        $tags = [];
+
+        // Select all <li> elements within the tags <ul>
+        $response->filter('div.ipsPageHeader > div > div > ul.ipsTags.ipsList_inline > li')->each(function ($node) use (&$tags) {
+            // Extract the tag label or text
+            $tag = $node->filter('a.ipsTag > span')->text();
+            $tags[] = trim($tag);
+        });
+
+        return $tags;
     }
 
     /** @return Request[] */

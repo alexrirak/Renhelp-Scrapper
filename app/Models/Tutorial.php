@@ -19,5 +19,10 @@ class Tutorial extends Model
         'author',
         'level_number',
         'level_label',
+        'tags',
+    ];
+
+    protected $casts = [
+        'tags' => 'array',
     ];
 }

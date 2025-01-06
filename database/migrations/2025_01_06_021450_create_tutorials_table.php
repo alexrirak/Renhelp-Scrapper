@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('level_label');
             $table->longText('content')->charset('binary');
             $table->text('srcUrl')->nullable();
+            $table->json('tags')->nullable();
             $table->timestamps();
         });
     }
