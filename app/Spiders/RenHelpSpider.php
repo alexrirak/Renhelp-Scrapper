@@ -97,6 +97,9 @@ class RenHelpSpider extends BasicSpider
         // remove span tags
         $markdown = preg_replace('/<\/?span[^>]*>/', '', $markdown);
 
+        //remove u tags
+        $markdown = preg_replace('/<\/?u[^>]*>/', '', $markdown);
+
         // find videos and replace
         // looks for <iframe data-embed-src="..." ...></iframe>
         // extract data-embed-src and replace with [video]URL[/video]
