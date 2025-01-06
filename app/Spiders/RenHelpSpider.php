@@ -7,6 +7,8 @@ use App\Spiders\Processors\SaveTutorialToDatabaseProcessorextends;
 use Generator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use League\HTMLToMarkdown\Converter\TableConverter;
+use League\HTMLToMarkdown\HtmlConverter;
 use RoachPHP\Downloader\Middleware\RequestDeduplicationMiddleware;
 use RoachPHP\Downloader\Middleware\UserAgentMiddleware;
 use RoachPHP\Extensions\LoggerExtension;
@@ -83,9 +85,15 @@ class RenHelpSpider extends BasicSpider
 
         $level = $this->extractLevel($response);
 
+        $content_html = Str::trim($response->filter('[data-role="commentContent"]')->first()->html());
+        $converter = new HtmlConverter(array('strip_tags' => 'span div'));
+        $converter->getEnvironment()->addConverter(new TableConverter());
+        $markdown = $converter->convert($content_html);
+
         $data = [
             'title' => $this->extractTitle($response),
-            'content' => Str::trim($response->filter('[data-role="commentContent"]')->first()->html()),
+            'content_html' => $content_html,
+            'content_markdown' => $markdown,
             'author' => $this->extractAuthor($response),
             'level_number' => $this->extractLevelNumber($level),
             'level_label' => $this->extractLevelLabel($level),

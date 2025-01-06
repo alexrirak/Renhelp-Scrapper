@@ -17,7 +17,8 @@ return new class extends Migration
             $table->text('author');
             $table->integer('level_number');
             $table->text('level_label');
-            $table->longText('content')->charset('binary');
+            $table->longText('content_html')->charset('binary');
+            $table->longText('content_markdown')->charset('binary');
             $table->text('srcUrl')->nullable();
             $table->json('tags')->nullable();
             $table->timestamps();

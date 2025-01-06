@@ -14,7 +14,8 @@ class SaveTutorialToDatabaseProcessor implements ItemProcessorInterface
     {
         Tutorial::create([
             'title' => $item->get('title'),
-            'content' => $item->get('content'),
+            'content_html' => $item->get('content_html'),
+            'content_markdown' => $item->get('content_markdown'),
             'srcUrl' => $item->get('srcUrl'),
             'author' => $item->get('author'),
             'level_number' => $item->get('level_number'),

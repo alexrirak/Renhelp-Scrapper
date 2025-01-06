@@ -14,7 +14,8 @@ class Tutorial extends Model
     protected $fillable = [
         'id',
         'title',
-        'content',
+        'content_html',
+        'content_markdown',
         'srcUrl',
         'author',
         'level_number',
