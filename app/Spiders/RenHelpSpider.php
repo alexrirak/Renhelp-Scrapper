@@ -114,7 +114,10 @@ class RenHelpSpider extends BasicSpider
         // looks for <iframe data-embed-src="..." ...></iframe>
         // extract data-embed-src and replace with [video]URL[/video]
         $markdown = preg_replace_callback('/<iframe allowfullscreen="true" data-embed-src="([^"]+)" frameborder="0" height="[^"]+" src="[^"]+" width="[^"]+"><\/iframe>/', function ($matches) {
-            return "[video]{$matches[1]}[/video]";
+            // extract video id from url
+            $videoId = Str::between($matches[1], '/embed/', '?');
+
+            return "[video]https://www.youtube.com/watch?v={$videoId}[/video]";
         }, $markdown);
 
         // remove div tags
