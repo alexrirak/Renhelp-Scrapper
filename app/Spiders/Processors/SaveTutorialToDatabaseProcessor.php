@@ -10,6 +10,7 @@ use RoachPHP\Support\Configurable;
 class SaveTutorialToDatabaseProcessor implements ItemProcessorInterface
 {
     use Configurable;
+
     public function processItem(ItemInterface $item): ItemInterface
     {
         Tutorial::create([

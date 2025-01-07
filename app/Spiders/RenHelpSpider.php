@@ -3,7 +3,6 @@
 namespace App\Spiders;
 
 use App\Spiders\Processors\SaveTutorialToDatabaseProcessor;
-use App\Spiders\Processors\SaveTutorialToDatabaseProcessorextends;
 use Generator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -48,11 +47,11 @@ class RenHelpSpider extends BasicSpider
 
     public function parseCategories(Response $response): \Generator
     {
-        Log::info("Parsing Categories");
+        Log::info('Parsing Categories');
         $pages = $response
             ->filter('h4.ipsDataItem_title > a')
             ->links();
-        Log::info("Categories Found:");
+        Log::info('Categories Found:');
         foreach ($pages as $page) {
             Log::info($page->getUri());
 
@@ -62,21 +61,21 @@ class RenHelpSpider extends BasicSpider
 
     public function parseTutorials(Response $response): \Generator
     {
-        Log::info("Parsing Tutorials");
+        Log::info('Parsing Tutorials');
         $pages = $response
             ->filter('h4.ipsDataItem_title > span.ipsType_break > a')
             ->links();
-        Log::info("Tutorials Found:");
+        Log::info('Tutorials Found:');
         foreach ($pages as $page) {
             Log::info($page->getUri());
-            yield $this->request('GET', $page->getUri(),'parse');
+            yield $this->request('GET', $page->getUri(), 'parse');
         }
 
         // Check for a "Next" page link in the pagination
         $nextPageNode = $response->filter('ul.ipsPagination > li.ipsPagination_next > a');
         if ($nextPageNode->count() > 0) {
             $nextPageUrl = $nextPageNode->first()->attr('href');
-            Log::info("Found next page of tutorials: " . $nextPageUrl);
+            Log::info('Found next page of tutorials: '.$nextPageUrl);
 
             // Yield a request to parse the next page of tutorials
             yield $this->request('GET', $nextPageUrl, 'parseTutorials');
@@ -89,25 +88,24 @@ class RenHelpSpider extends BasicSpider
     public function parse(Response $response): Generator
     {
         $srcUrl = $response->getUri();
-        Log::info("Parsing Tutorial Page: " . $srcUrl);
+        Log::info('Parsing Tutorial Page: '.$srcUrl);
 
         $level = $this->extractLevel($response);
 
         $content_html = Str::trim($response->filter('[data-role="commentContent"]')->first()->html());
-        //replace src attributes of img tags with data-src attribute
-        $content_html = preg_replace_callback('/<img([^>]*?)\s+src="([^"]+)"([^>]*?)\s+data-src="([^"]+)"/', function($matches) {
+        // replace src attributes of img tags with data-src attribute
+        $content_html = preg_replace_callback('/<img([^>]*?)\s+src="([^"]+)"([^>]*?)\s+data-src="([^"]+)"/', function ($matches) {
             // Replace src with the value of data-src
-            return '<img' . $matches[1] . ' src="' . $matches[4] . '"' . $matches[3];
+            return '<img'.$matches[1].' src="'.$matches[4].'"'.$matches[3];
         }, $content_html);
 
-
-        $converter = new HtmlConverter();
-        $converter->getEnvironment()->addConverter(new TableConverter());
+        $converter = new HtmlConverter;
+        $converter->getEnvironment()->addConverter(new TableConverter);
         $markdown = $converter->convert($content_html);
         // remove span tags
         $markdown = preg_replace('/<\/?span[^>]*>/', '', $markdown);
 
-        //remove u tags
+        // remove u tags
         $markdown = preg_replace('/<\/?u[^>]*>/', '', $markdown);
 
         // find videos and replace
@@ -122,7 +120,6 @@ class RenHelpSpider extends BasicSpider
 
         // remove div tags
         $markdown = preg_replace('/<\/?div[^>]*>/', '', $markdown);
-
 
         $data = [
             'title' => $this->extractTitle($response),
@@ -149,7 +146,6 @@ class RenHelpSpider extends BasicSpider
             return $title;
         }
     }
-
 
     protected function extractAuthor(Response $response): string
     {
@@ -187,21 +183,23 @@ class RenHelpSpider extends BasicSpider
         return 'Unknown';
     }
 
-    protected function extractLevelNumber(String $level): int
+    protected function extractLevelNumber(string $level): int
     {
         $levelNumber = Str::before($level, ' - ');
-        if($levelNumber && is_numeric($levelNumber)) {
-            return (int)$levelNumber;
+        if ($levelNumber && is_numeric($levelNumber)) {
+            return (int) $levelNumber;
         }
+
         return 0;
     }
 
-    protected function extractLevelLabel(String $level): string
+    protected function extractLevelLabel(string $level): string
     {
         $levelLabel = Str::after($level, ' - ');
-        if($levelLabel) {
+        if ($levelLabel) {
             return $levelLabel;
         }
+
         return 'Unknown';
     }
 
