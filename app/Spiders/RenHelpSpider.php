@@ -71,6 +71,16 @@ class RenHelpSpider extends BasicSpider
             Log::info($page->getUri());
             yield $this->request('GET', $page->getUri(),'parse');
         }
+
+        // Check for a "Next" page link in the pagination
+        $nextPageNode = $response->filter('ul.ipsPagination > li.ipsPagination_next > a');
+        if ($nextPageNode->count() > 0) {
+            $nextPageUrl = $nextPageNode->first()->attr('href');
+            Log::info("Found next page of tutorials: " . $nextPageUrl);
+
+            // Yield a request to parse the next page of tutorials
+            yield $this->request('GET', $nextPageUrl, 'parseTutorials');
+        }
     }
 
     /**
